@@ -4773,11 +4773,13 @@ static int handle_exception_nmi(struct kvm_vcpu *vcpu)
 	}
 
 	/*
-	 * The #PF with PFEC.RSVD = 1 indicates the guest is accessing
+	 * 1. The #PF with PFEC.RSVD = 1 indicates the guest is accessing
 	 * MMIO, it is better to report an internal error.
 	 * See the comments in vmx_handle_exit.
+	 * 2. Second exception is benign exception, replace prior exception, only #AC
 	 */
 	if ((vect_info & VECTORING_INFO_VALID_MASK) &&
+	    !is_exception_n(intr_info, AC_VECTOR) &&
 	    !(is_page_fault(intr_info) && !(error_code & PFERR_RSVD_MASK))) {
 		vcpu->run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
 		vcpu->run->internal.suberror = KVM_INTERNAL_ERROR_SIMUL_EX;
